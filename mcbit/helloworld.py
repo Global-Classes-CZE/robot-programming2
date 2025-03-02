@@ -1,8 +1,7 @@
 from microbit import *
 
-
-while True:
-    (display.scroll("Miluju te Martinko")
+(display.scroll("Hello World")
+while True:    
     display.show(Image.HEART))
 
 

@@ -1,32 +1,84 @@
 from microbit import i2c, sleep
 
-def init_motor():
-    i2c.write(0x70, b'\x00\x01')
-    i2c.write(0x70, b'\xE8\xAA')
-    sleep(100)
+class InvalidSideException(Exception):
+    """Raised when an invalid side is specified."""
+    pass
 
-def go(side, direction, speed):
-    # side může být jen “left” a “right”
-    # “direction” je typu string a může mít hodnoty “forward”, "backward"
-    # speed je celočíselné číslo od 0-255
-    # vyuzijte prikladu z hodiny, ktery poslal povel x03 - prave kolo pro jizdu rovne
-    # ostatni povely:
-    # Pravý motor:
-    # 0x02 - příkaz pro pohyb vzad
-    # 0x03 - příkaz pohyb vpřed
-    # Levý motor:
-    # 0x04 - příkaz pro pohyb vzad
-    # 0x05 - příkaz pro pohyb vpřed
+class InvalidDirectionException(Exception):
+    """Raised when an invalid direction is specified."""
+    pass
 
-    i2c.write(0x70, b'\x03' + bytes([speed]))
+class InvalidSpeedException(Exception):
+    """Raised when an invalid speed is specified."""
+    pass
+
+class Engine:
+    VALID_SIDES = ("left", "right")
+    VALID_DIRECTIONS = ("forward", "backward")
+
+    # Commands for movement per side and direction
+    MOVE_COMMANDS = {
+        "left": {
+            "forward": b'\x03',
+            "backward": b'\x02'
+        },
+        "right": {
+            "forward": b'\x05',
+            "backward": b'\x04'
+        }
+    }
+
+    def __init__(self, side):
+        if side not in self.VALID_SIDES:
+            raise InvalidSideException("Side must be 'left' or 'right'")
+        self.side = side
+
+    def init_engines():
+        """Initialize engines controller. This method should be called before any engine movement."""
+        i2c.write(0x70, b'\x00\x01')
+        i2c.write(0x70, b'\xE8\xAA')
+        sleep(100)
+
+    def go(self, direction, speed):
+        """
+        Control the engine movement.
+        :param direction: 'forward' or 'backward'
+        :param speed: integer value between 0 and 255
+        """
+        if direction not in self.VALID_DIRECTIONS:
+            raise InvalidDirectionException("Direction must be 'forward' or 'backward'")
+        if not (0 <= speed <= 255):
+            raise InvalidSpeedException("Speed must be between 0 and 255")
+
+        command = self.MOVE_COMMANDS[self.side][direction]
+        i2c.write(0x70, command + bytes([speed]))
 
 if __name__ == "__main__":
-    # Write your code here :-)
     i2c.init()
-    init_motor()
-    # volejte funkci go, tak abyste ziskali:
-    # Pohyb robota dopredu 1s
-    # Zastaveni 1s - DULEZITE! Nikdy nemente smer jizdy bez zastaveni
-    # Pohyb vzad 1s,
-    # zastaveni
-# Write your code here :-)
+
+    print("Initializing engines...")
+    Engine.init_engines()
+    left_engine = Engine("left")
+    right_engine = Engine("right")
+
+    print("Engines moving forward...")
+    left_engine.go("forward", 135)
+    right_engine.go("forward", 135)
+
+    print("Stop both engines.")
+    sleep(1000)
+    left_engine.go("forward", 0)
+    right_engine.go("forward", 0)
+
+    print("Engines moving backward...")
+    sleep(1000)
+    left_engine.go("backward", 135)
+    right_engine.go("backward", 135)
+
+    print("Stop both engines.")
+    sleep(1000)
+    left_engine.go("backward", 0)
+    right_engine.go("backward", 0)
+
+    sleep(1000)
+    print("Done.")

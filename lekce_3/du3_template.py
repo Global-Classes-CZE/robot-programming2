@@ -6,26 +6,27 @@ def init_motoru():
     sleep(100)
 
 def jed(strana, smer, rychlost):
-    # Strana může být jen “leva” a “prava”
-    # “smer” je typu string a může mít hodnoty “dopredu”, "dozadu"
-    # Rychlost je celočíselné číslo od 0-255
-    # vyuzijte prikladu z hodiny, ktery poslal povel x03 - prave kolo pro jizdu rovne
-    # ostatni povely:
-    # Pravý motor:
-    # 0x02 - příkaz pro pohyb vzad
-    # 0x03 - příkaz pohyb vpřed
-    # Levý motor:
-    # 0x04 - příkaz pro pohyb vzad
-    # 0x05 - příkaz pro pohyb vpřed
-
-    i2c.write(0x70, b'\x03' + bytes([rychlost]))
+    if (rychlost >= 0 and rychlost <= 255):
+        if (strana == "leva" and smer == "dopredu"):
+            i2c.write(0x70, b'\x05' + bytes([rychlost]))
+        if (strana == "leva" and smer == "dozadu"):
+            i2c.write(0x70, b'\x04' + bytes([rychlost]))
+        if (strana == "prava" and smer == "dopredu"):
+            i2c.write(0x70, b'\x03' + bytes([rychlost]))
+        if (strana == "prava" and smer == "dozadu"):
+            i2c.write(0x70, b'\x02' + bytes([rychlost]))
 
 if __name__ == "__main__":
-    # Write your code here :-)
     i2c.init()
     init_motoru()
-    # volejte funkci jed, tak abyste ziskali:
-    # Pohyb robota dopredu 1s
-    # Zastaveni 1s - DULEZITE! Nikdy nemente smer jizdy bez zastaveni
-    # Pohyb vzad 1s,
-    # zastaveni
+    jed("leva","dopredu",125)
+    jed("prava","dopredu",125)
+    sleep (1000)
+    jed("leva","dopredu",0)
+    jed("prava","dopredu",0)
+    sleep (1000)
+    jed("leva","dozadu",135)
+    jed("prava","dozadu",135)
+    sleep (1000)
+    jed("leva","dozadu",0)
+    jed("prava","dozadu",0)

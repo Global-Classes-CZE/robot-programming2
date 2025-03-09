@@ -8,12 +8,16 @@ def init_motoru():
 def jed(strana, smer, rychlost):
     if (rychlost >= 0 and rychlost <= 255):
         if (strana == "leva" and smer == "dopredu"):
+            i2c.write(0x70, b'\x04' + bytes([0]))
             i2c.write(0x70, b'\x05' + bytes([rychlost]))
         if (strana == "leva" and smer == "dozadu"):
+            i2c.write(0x70, b'\x05' + bytes([0]))
             i2c.write(0x70, b'\x04' + bytes([rychlost]))
         if (strana == "prava" and smer == "dopredu"):
+            i2c.write(0x70, b'\x02' + bytes([0]))
             i2c.write(0x70, b'\x03' + bytes([rychlost]))
         if (strana == "prava" and smer == "dozadu"):
+            i2c.write(0x70, b'\x03' + bytes([0]))
             i2c.write(0x70, b'\x02' + bytes([rychlost]))
 
 if __name__ == "__main__":

@@ -56,29 +56,34 @@ class Engine:
 if __name__ == "__main__":
     i2c.init()
 
-    print("Initializing engines...")
-    Engine.init_engines()
-    left_engine = Engine("left")
-    right_engine = Engine("right")
+    try
+        print("Initializing engines...")
+        Engine.init_engines()
+        left_engine = Engine("left")
+        right_engine = Engine("right")
 
-    print("Engines moving forward...")
-    left_engine.go("forward", 135)
-    right_engine.go("forward", 135)
+        print("Engines moving forward...")
+        left_engine.go("forward", 135)
+        right_engine.go("forward", 135)
 
-    print("Stop both engines.")
-    sleep(1000)
-    left_engine.go("forward", 0)
-    right_engine.go("forward", 0)
+        print("Stop both engines.")
+        sleep(1000)
+        left_engine.go("forward", 0)
+        right_engine.go("forward", 0)
 
-    print("Engines moving backward...")
-    sleep(1000)
-    left_engine.go("backward", 135)
-    right_engine.go("backward", 135)
+        print("Engines moving backward...")
+        sleep(1000)
+        left_engine.go("backward", 135)
+        right_engine.go("backward", 135)
 
-    print("Stop both engines.")
-    sleep(1000)
-    left_engine.go("backward", 0)
-    right_engine.go("backward", 0)
+        print("Stop both engines.")
+        sleep(1000)
+        left_engine.go("backward", 0)
+        right_engine.go("backward", 0)
 
-    sleep(1000)
-    print("Done.")
+        sleep(1000)
+        print("Done.")
+
+    except Exception as e:
+        print(e)
+        print("Exiting...")

@@ -1,31 +1,50 @@
 from microbit import i2c, sleep
 
+from microbit import i2c,sleep
+
 def init_motoru():
     i2c.write(0x70, b'\x00\x01')
     i2c.write(0x70, b'\xE8\xAA')
+    i2c.init()
     sleep(100)
 
 def jed(strana, smer, rychlost):
-    # Strana může být jen “leva” a “prava”
-    # “smer” je typu string a může mít hodnoty “dopredu”, "dozadu"
-    # Rychlost je celočíselné číslo od 0-255
-    # vyuzijte prikladu z hodiny, ktery poslal povel x03 - prave kolo pro jizdu rovne
-    # ostatni povely:
-    # Pravý motor:
-    # 0x02 - příkaz pro pohyb vzad
-    # 0x03 - příkaz pohyb vpřed
-    # Levý motor:
-    # 0x04 - příkaz pro pohyb vzad
-    # 0x05 - příkaz pro pohyb vpřed
-
-    i2c.write(0x70, b'\x03' + bytes([rychlost]))
+    if strana == 'prava':
+        if smer == 'dopredu':
+            pravy_motor = b'\x03'
+        if smer == 'dozadu':
+            pravy_motor = b'\x02'
+            
+        i2c.write(0x70, pravy_motor + bytes([rychlost]))
+            
+    if strana == 'lava':
+        if smer == 'dopredu':
+            lavy_motor = b'\x05'
+        if smer == 'dozadu':
+            lavy_motor = b'\x04'
+    
+        i2c.write(0x70, lavy_motor + bytes([rychlost]))
 
 if __name__ == "__main__":
-    # Write your code here :-)
-    i2c.init()
+    
     init_motoru()
-    # volejte funkci jed, tak abyste ziskali:
-    # Pohyb robota dopredu 1s
-    # Zastaveni 1s - DULEZITE! Nikdy nemente smer jizdy bez zastaveni
-    # Pohyb vzad 1s,
-    # zastaveni
+    
+    jed('prava','dopredu',135)
+    jed('lava','dopredu',135)
+    
+    sleep(1000)
+    
+    jed('prava','dopredu',0)
+    jed('lava','dopredu',0)
+    
+    sleep(1000)
+    
+    jed('prava','dozadu',135)
+    jed('lava','dozadu',135)
+    
+    sleep(1000)
+    
+    jed('prava','dozadu',0)
+    jed('lava','dozadu',0)
+    
+    sleep(1000)

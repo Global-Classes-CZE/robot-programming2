@@ -53,10 +53,17 @@ class Engine:
         command = self.MOVE_COMMANDS[self.side][direction]
         i2c.write(0x70, command + bytes([speed]))
 
+    def emergency_stop(self):
+        """Stop all engines immediately."""
+        sleep(100)
+        self.go("forward", 0)
+        sleep(100)
+        self.go("backward", 0)
+
 if __name__ == "__main__":
     i2c.init()
 
-    try
+    try:
         print("Initializing engines...")
         Engine.init_engines()
         left_engine = Engine("left")
@@ -87,3 +94,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         print("Exiting...")
+        left_engine.emergency_stop()
+        right_engine.emergency_stop()

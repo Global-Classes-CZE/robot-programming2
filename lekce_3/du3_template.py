@@ -15,35 +15,36 @@ def jed(strana, smer, rychlost):
     # Levý motor:
     # 0x04 - příkaz pro pohyb vzad
     # 0x05 - příkaz pro pohyb vpřed
+    if (rychlost>=0 and rychlost<=255):
+        if (strana == "leva"):
+            print("leva")
+            if smer == "dopredu":
+                print("dopredu")
+                i2c.write(0x70, b'\x05' + bytes([rychlost]))
+            elif smer == "dozadu":
+                print("dozadu")
+                i2c.write(0x70, b'\x04' + bytes([rychlost]))
+            else:
+                print("nemam smer")
 
-    if (strana == "leva"):
-       print("leva")
-       if smer == "dopredu":
-            print("dopredu")
-            i2c.write(0x70, b'\x05' + bytes([rychlost]))
-       elif smer == "dozadu":
-            print("dozadu")
-            i2c.write(0x70, b'\x04' + bytes([rychlost]))
-       else:
-            print("nemam smer")
-
-    elif strana == "prava":
+        elif strana == "prava":
     # Pravý motor:
     # 0x02 - příkaz pro pohyb vzad
     # 0x03 - příkaz pohyb vpřed
 
-       print("prava")
-       if smer == "dopredu":
-            print("dopredu")
-            i2c.write(0x70, b'\x03' + bytes([rychlost]))
-       elif smer == "dozadu":
-            print("dozadu")
-            i2c.write(0x70, b'\x02' + bytes([rychlost]))
-       else:
-           print("nemam smer")
+            print("prava")
+            if smer == "dopredu":
+                print("dopredu")
+                i2c.write(0x70, b'\x03' + bytes([rychlost]))
+            elif smer == "dozadu":
+                print("dozadu")
+                i2c.write(0x70, b'\x02' + bytes([rychlost]))
+            else:
+                print("nemam smer")
+        else:
+            print("nemam stranu")
     else:
-        print("nemam stranu")
-
+        print("chybna rychlost")
 
 
 

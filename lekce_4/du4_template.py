@@ -5,7 +5,6 @@ posledni_stav_pravy = 0
 tik_count_levy = 0
 tik_count_pravy = 0
 
-
 def pocet_tiku_levy():
     global posledni_stav_levy
     global tik_count_levy

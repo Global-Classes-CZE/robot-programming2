@@ -12,7 +12,7 @@ def vypis_senzory_cary(levy, centralni, pravy):
         display.pixel(int(display.width/2),0, 255)
     else:
         display.pixel(int(display.width/2),0,0)
-    
+
     if pravy:
         display.pixel(0,0, 255)
     else:
@@ -32,7 +32,7 @@ def vycti_senzory():
     try:
         buffer = bytearray(1)
         i2c.readfrom_into(0x38, buffer, start = 0, end = 1)
-        data_bit_string = byte_na_bity(buffer)  
+        data_bit_string = byte_na_bity(buffer)
     finally:
         i2c.unlock()
 
@@ -60,7 +60,7 @@ def init_motoru():
         sleep(0.1)
     finally:
         i2c.unlock()
-    
+
 def nastav_PWM_kanaly(kanal_on, kanal_off, rychlost):
     # je nesmirne dulezite vzdy mit zapnuty jen jeden kanal,
     # tedy tato funkce zarucuje, ze se druhy kanal vypne
@@ -72,7 +72,7 @@ def nastav_PWM_kanaly(kanal_on, kanal_off, rychlost):
         i2c.writeto(0x70, kanal_on + bytes([rychlost]))
     finally:
         i2c.unlock()
-    
+
     return 0
 
 def jed(strana, smer, rychlost):
@@ -119,24 +119,24 @@ def zastav():
     jed("levy", "dozadu", 0)
 
 def stav_reaguj_na_caru(data_string):
-    
+
     if vrat_levy(data_string):
         # DU naprogramujte zatoceni vlevo
         # a vhodne vyberte rychlosti
-        
+        jed("levy", "dopredu", 50)
+        jed("pravy", "dopredu", 100)
         return True
-    
+
     if vrat_pravy(data_string):
         # DU naprogramujte zatoceni vpravo
         # a vhodne vyberte rychlosti
-
- 
+        jed("levy", "dopredu", 100)
+        jed("pravy", "dopredu", 50)
         return True
 
 
 
 if __name__ == "__main__":
-
     init_motoru()
     zastav()
 
@@ -160,17 +160,12 @@ if __name__ == "__main__":
             vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
             aktualni_stav = st_reaguj_na_caru
             print(aktualni_stav)
-        
+
         if aktualni_stav == st_reaguj_na_caru:
             povedlo_se = stav_reaguj_na_caru(data)
             aktualni_stav = st_vycti_senzory
             print(aktualni_stav)
-        
+
         sleep(0.1)
-    
+
     zastav()
-
-    
-
-   
-

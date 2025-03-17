@@ -1,31 +1,61 @@
 from microbit import sleep, pin14, pin15
+from utime import ticks_diff, ticks_us
+
+
+class Pocitadlo_tiku:
+    def __init__(self):
+        self._pocet_levy = 0
+        self._pocet_pravy = 0
+        self._posledni_leva = 0
+        self._posledni_prava = 0
+
+    def pocet(self, strana, data):
+        if strana == "leva":
+            if self._posledni_leva != data:
+                self._posledni_leva = data
+                self._pocet_levy += 1
+            return self._pocet_levy
+        if strana == "prava":
+            if self._posledni_prava != data:
+                self._posledni_prava = data
+                self._pocet_pravy += 1
+            return self._pocet_pravy
+
 
 def pocet_tiku_levy():
-    surova_data_leva = pin14.read_digital()
-    #zde napiste vas kod
-    #scitejte tiky pro levy enkoder od zacatku behu progamu
-    return #vratte soucet
+    return pocitadlo.pocet("leva", pin14.read_digital())
+
 
 def pocet_tiku_pravy():
-    surova_data_prava = pin15.read_digital()
-    #zde napiste vas kod
-    #scitejte tiky pro pravy enkoder od zacatku behu progamu
-    return #vratte soucet
+    return pocitadlo.pocet("prava", pin15.read_digital())
 
-def vypocti_rychlost(pocet_tiku):
-    # zde patri ukol DU5
+
+def vypocti_rychlost(pocet_tiku, interval):
+    otacky = pocet_tiku / 40
+    uhel = otacky * 6.28
+    rychlost = uhel / interval
+    return rychlost  # vratte rychlost v radianech za sekundu
     
-    return #vratte rychlost v radianech za sekundu
+def aktualni_rychlost(interval):
+    cas_zacatek = ticks_us()
+    tiky_leve_kolo = pocet_tiku_levy()
+    # tiky_prave_kolo = pocet_tiku_pravy()
     
+    while int(ticks_diff(ticks_us(), cas_zacatek)/1000) < interval:
+        pocet_tiku_levy()
+        pocet_tiku_pravy()
+        sleep(5)
+    
+    return vypocti_rychlost(pocet_tiku_levy() - tiky_leve_kolo, interval)
+
+
 if __name__ == "__main__":
 
-    aktualni_rychlost = 0
-    
+    pocitadlo = Pocitadlo_tiku()
+    # aktualni_rychlost = 0
+    perioda_cyklu_ms = 5
+    interval_mereni = 166
+
     while True:
-        print(pocet_tiku_levy(), pocet_tiku_pravy())
-        #volejte zde funkci aktualni_rychlost = vypocti_rychlost s vhodnou peridou - viz slidy min 166ms;
-        #budete potrebovat vyuzit praci s casem pres tick_us, ticks_diff (mozna prikazy jsou jinak na pico:edu, pokud nenajdete, zeptejte se na discordu)
-        #staci udelat pro jedno kolo
-        
-        print(aktualni_rychlost)
+        print(aktualni_rychlost(interval_mereni))
         sleep(5)

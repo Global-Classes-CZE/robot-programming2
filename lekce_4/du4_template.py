@@ -31,6 +31,8 @@ def pocet_tiku_pravy():
 
 if __name__ == "__main__":
 
+    pocitadlo = Pocitadlo_tiku()
+
     while True:
         print(pocet_tiku_levy(), pocet_tiku_pravy())
         sleep(5)

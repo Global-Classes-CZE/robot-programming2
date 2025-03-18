@@ -7,10 +7,6 @@ def pocet_tiku_levy(tiky_leva, stav_leva):
     sum_leva = tiky_leva
     prev_data_leva = stav_leva
 
-    if tiky_leva == 0:
-        prev_data_leva = pin14.read_digital()
-
-    sleep(2)
     surova_data_leva = pin14.read_digital()
 
     if surova_data_leva != prev_data_leva:
@@ -25,11 +21,6 @@ def pocet_tiku_pravy(tiky_prava, stav_prava):   #poslal som si lokalne premenne 
     sum_prava = tiky_prava                      #lokalnu premennu v pocitadle sum_prava zosynchronizujem s tiky_prava; lebo tato lokalna premenna sa vynuluje vzdy, ked sa zavola funkcia ak to neurobim
     prev_data_prava = stav_prava                #rovnako zosycnhronizujem predosly stav enkodera
 
-
-    if tiky_prava == 0:                         #ak som uplne na zaciatku procesu pocitania, musim si pre prve porovnanie prvykrat precitat stav enkodera; ak to neurobim pred porovnavanim stavov, kode nebude bezat
-        prev_data_prava = pin15.read_digital()
-
-    sleep(2)                                    #chvilu pockam
     surova_data_prava = pin15.read_digital()    #precitam enkoder znova a zapisem stav
 
     if surova_data_prava != prev_data_prava:    #ked su zname aspon 2 stavy, porovnavam
@@ -41,13 +32,13 @@ def pocet_tiku_pravy(tiky_prava, stav_prava):   #poslal som si lokalne premenne 
 
 if __name__ == "__main__":
 
-    cas_minule = ticks_us() #setnem si aktualny cas
+    cas_minule = ticks_us()                     #setnem si aktualny cas
 
-    tiky_prava = 0 #vynulujem pocitadlo
-    stav_prava = 0 #setnem pociatocny stav praveho enkodera
+    tiky_prava = 0                              #vynulujem pocitadlo
+    stav_prava = pin15.read_digital()           #setnem pociatocny stav praveho enkodera
 
     tiky_leva = 0
-    stav_leva = 0
+    stav_leva = pin14.read_digital()
 
     while True:
 

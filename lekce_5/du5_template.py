@@ -1,7 +1,7 @@
 from microbit import sleep, pin14, pin15, i2c
 from utime import ticks_us, ticks_diff
 
-tiky_leva = 0                           # globalna premenne pocitadla L/P
+tiky_leva = 0                           # globalna premenna pocitadla L/P
 prev_data_leva = pin14.read_digital()   # globalna premenna stavu predosleho merania L/P
 
 tiky_prava = 0

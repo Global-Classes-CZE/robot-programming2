@@ -1,19 +1,26 @@
 from picoed import i2c
 from time import sleep
 
+POLOMER_ROBOTA = 0.075
+
 def init_motoru():
     i2c.write(0x70, bytes([0, 0x01]))
     i2c.write(0x70, bytes([8, 0xAA]))
     sleep(0.01)
 
 def jed(dopredna, uhlova):
-    # “dopredna” je float a obsahuje dopřednou rychlost robota
-    #    pro tento úkol prozatím používejte hodnotu 135 nebo 0
-    # “uhlova” je float a obsahuje rychlost otáčení robota
-    #    pro tento úkol prozatím používejte hodnotu 1350 nebo 0
-    # Použijte vzorečky kinematiky a spočítejte v_l a v_r
-    # Podle znamínek v_l a v_r volejte příslušné příkazy na směr motorů
-    # Metoda také zastaví pokud ji dám nulové rychlosti
+    v_l = dopredna - (uhlova * POLOMER_ROBOTA)
+    v_r = dopredna + (uhlova * POLOMER_ROBOTA)
+
+    if v_l == 0 and v_r == 0:
+        jed_pwm("leva", "dopredu", 0)
+        jed_pwm("prava", "dopredu", 0)
+    else:
+        smer_l = "dopredu" if v_l >= 0 else "dozadu"
+        smer_r = "dopredu" if v_r >= 0 else "dozadu"
+
+        jed_pwm("leva", smer_l, min(abs(int(v_l)), 255))
+        jed_pwm("prava", smer_r, min(abs(int(v_r)), 255))
 
     return 0
 
@@ -29,7 +36,7 @@ def jed_pwm(strana, smer, rychlost):
             nastav_kanaly(2, 3, rychlost)
             return 0
         elif (strana == "prava" and smer == "dozadu"):
-            nastav_kanaly(3, 2, rychlost) 
+            nastav_kanaly(3, 2, rychlost)
             return 0
         else:
             return -1

@@ -28,9 +28,10 @@ def nuluj_tiky():
     tiky_levy = 0
     tiky_pravy = 0
 
-def vypocti_rychlost(pocet_tiku):
+def vypocti_rychlost(pocet_tiku, interval=1000000):
+    interval_na_sekundy = interval / 1000000
     stupne = (pocet_tiku/40) * 360
-    return radians(stupne)
+    return radians(stupne)/interval_na_sekundy
 
 if __name__ == "__main__":
     print("Zacatek programu")
@@ -40,12 +41,12 @@ if __name__ == "__main__":
         pocet_tiku_levy()
         pocet_tiku_pravy()
         cas_ted = ticks_us()
+        interval = 200000
 
-        # kazdou vterinu vypise rychlost kol v radianech za sekundu
-        # kdybychom meli jinou periodu vypisu, tak musime danou rychlost vynasobit pomernym faktorem 1s/perioda_vypisu
-        if ticks_diff(cas_ted, cas_minule) > 1000000:
-            aktualni_rychlost_levy = vypocti_rychlost(tiky_levy)
-            aktualni_rychlost_pravy = vypocti_rychlost(tiky_pravy)
+        # kazdych 200ms vypise rychlost kol v radianech za sekundu
+        if ticks_diff(cas_ted, cas_minule) > interval:
+            aktualni_rychlost_levy = vypocti_rychlost(tiky_levy, interval)
+            aktualni_rychlost_pravy = vypocti_rychlost(tiky_pravy, interval)
             nuluj_tiky()
             cas_minule = ticks_us()
             print(aktualni_rychlost_levy, aktualni_rychlost_pravy)

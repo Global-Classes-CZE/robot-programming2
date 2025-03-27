@@ -7,13 +7,25 @@ def init_motoru():
     sleep(0.01)
 
 def jed(dopredna, uhlova):
-    # “dopredna” je float a obsahuje dopřednou rychlost robota
-    #    pro tento úkol prozatím používejte hodnotu 135 nebo 0
-    # “uhlova” je float a obsahuje rychlost otáčení robota
-    #    pro tento úkol prozatím používejte hodnotu 1350 nebo 0
-    # Použijte vzorečky kinematiky a spočítejte v_l a v_r
-    # Podle znamínek v_l a v_r volejte příslušné příkazy na směr motorů
-    # Metoda také zastaví pokud ji dám nulové rychlosti
+
+    d = 0.0725 # polovina vzdálenosti mezi koly robota
+    v_l = dopredna - d * uhlova
+    v_r = dopredna + d * uhlova
+
+    # rychlosti v_l a v_r se ještě musí převést na PWM signál
+    if v_l > 0:
+        jed_pwm("leva", "dopredu",v_l)
+    elif v_l < 0:
+        jed_pwm("leva", "dozadu", v_l)  
+    else:
+        jed_pwm("leva", "dopredu", 0)
+
+    if v_r > 0:
+        jed_pwm("prava", "dopredu", v_r)
+    elif v_r < 0:
+        jed_pwm("prava", "dozadu", v_r)
+    else:
+        jed_pwm("prava", "dopredu", 0)
 
     return 0
 

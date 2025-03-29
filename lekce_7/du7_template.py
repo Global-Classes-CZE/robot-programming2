@@ -56,7 +56,6 @@ def nastav_kanaly(kanal_off, kanal_on, rychlost):
         pass
     try:
         i2c.writeto(0x70, bytes([kanal_off, 0]))
-        i2c.writeto(0x70, bytes([kanal_off, 0]))
         i2c.writeto(0x70, bytes([kanal_on, rychlost]))
     finally:
         i2c.unlock()

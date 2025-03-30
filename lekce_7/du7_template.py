@@ -4,9 +4,14 @@ from time import sleep
 POLOMER_ROBOTA = 0.075
 
 def init_motoru():
-    i2c.write(0x70, bytes([0, 0x01]))
-    i2c.write(0x70, bytes([8, 0xAA]))
-    sleep(0.01)
+    while not i2c.try_lock():
+        pass
+    try:
+        i2c.writeto(0x70, b'\x00\x01')
+        i2c.writeto(0x70, b'\xE8\xAA')
+        sleep(0.1)
+    finally:
+        i2c.unlock()
 
 def jed(dopredna, uhlova):
     v_l = dopredna - (uhlova * POLOMER_ROBOTA)
@@ -47,17 +52,33 @@ def nastav_kanaly(kanal_off, kanal_on, rychlost):
     while not i2c.try_lock():
         pass
     try:
-        i2c.write(0x70, bytes([kanal_off, 0]))
-        i2c.write(0x70, bytes([kanal_on, rychlost]))
+        i2c.writeto(0x70, bytes([kanal_off, 0]))
+        i2c.writeto(0x70, bytes([kanal_on, rychlost]))
     finally:
         i2c.unlock()
     return 0
 
+def stuj():
+    jed(0, 0)
+    sleep(1)
+
 if __name__ == "__main__":
     # Write your code here :-)
     init_motoru()
-    # volejte funkci jed, tak abyste ziskali:
-    # Pohyb robota dopredu 1s
-    # Zastaveni 1s - DULEZITE! Nikdy nemente smer jizdy bez zastaveni
-    # Otáčení robota na místě doleva
-    # zastaveni
+
+    # jed dopredu
+    jed(135, 0)
+    sleep(2)
+    stuj()
+    # otoc se vlevo
+    jed(0, 1350)
+    sleep(2)
+    stuj()
+    # otoc se vpravo
+    jed(0, -1350)
+    sleep(2)
+    stuj()
+    # jed dozadu
+    jed(-135, 0)
+    sleep(2)
+    stuj()

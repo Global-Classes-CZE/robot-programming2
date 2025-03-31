@@ -12,7 +12,7 @@ def vypis_senzory_cary(levy, centralni, pravy):
         display.pixel(int(display.width/2),0, 255)
     else:
         display.pixel(int(display.width/2),0,0)
-    
+
     if pravy:
         display.pixel(0,0, 255)
     else:
@@ -32,7 +32,7 @@ def vycti_senzory():
     try:
         buffer = bytearray(1)
         i2c.readfrom_into(0x38, buffer, start = 0, end = 1)
-        data_bit_string = byte_na_bity(buffer)  
+        data_bit_string = byte_na_bity(buffer)
     finally:
         i2c.unlock()
 
@@ -60,7 +60,7 @@ def init_motoru():
         sleep(0.1)
     finally:
         i2c.unlock()
-    
+
 def nastav_PWM_kanaly(kanal_on, kanal_off, rychlost):
     # je nesmirne dulezite vzdy mit zapnuty jen jeden kanal,
     # tedy tato funkce zarucuje, ze se druhy kanal vypne
@@ -72,7 +72,7 @@ def nastav_PWM_kanaly(kanal_on, kanal_off, rychlost):
         i2c.writeto(0x70, kanal_on + bytes([rychlost]))
     finally:
         i2c.unlock()
-    
+
     return 0
 
 def jed(strana, smer, rychlost):
@@ -119,30 +119,65 @@ def zastav():
     jed("levy", "dozadu", 0)
 
 def detekuj_krizovatku(data_string):
-    # DU 8 
-    # situace 1: vsechny tri senzory detekuji cernou
-    # situace 2: jenom dva senzory detekuji cernou
-    #return True/False
-    return False # nahradte tento return
+    levy = vrat_levy(data_string)
+    centralni = vrat_centralni(data_string)
+    pravy = vrat_pravy(data_string)
+    pocet_aktivnich = sum([levy, centralni, pravy])
+
+    # detekujeme krizovatku, kdyz vidi cernou vsechny tri nebo dva senzory
+    if pocet_aktivnich >= 2:
+        return True
+
+    return False
+
 
 def stav_reaguj_na_caru(data_string):
     if detekuj_krizovatku(data_string):
         return False
-    
+
     if vrat_levy(data_string):
         jed("pravy", "dopredu", 120)
         jed("levy", "dopredu", 0)
-        
+
         return True
-    
+
     if vrat_pravy(data_string):
         jed("pravy", "dopredu", 0)
         jed("levy", "dopredu", 120)
- 
-        return True 
-    
+
+        return True
+
     return True
 
+def odboc_doprava(data_string):
+    # Otočení doprava, dokud nenarazí na černou čáru
+    while True:
+        jed("levy", "dopredu", 120)
+        jed("pravy", "dozadu", 120)
+        sleep(0.1)
+        data = stav_vycti_senzory()
+        if vrat_centralni(data):
+            zastav()
+            break
+
+def odboc_doleva(data_string):
+    # Otočení doleva, dokud nenarazí na černou čáru
+    while True:
+        jed("levy", "dozadu", 120)
+        jed("pravy", "dopredu", 120)
+        sleep(0.1)
+        data = stav_vycti_senzory()
+        if vrat_centralni(data):
+            zastav()
+            break
+
+
+def stav_reaguj_na_krizovatku(data_string):
+    # Momentálně je auto vzdy odboci doleva je li to mozne
+    if vrat_levy(data_string) and vrat_centralni(data_string):
+        odboc_doleva(data_string)
+    if vrat_pravy(data_string) and vrat_centralni(data_string):
+        odboc_doprava(data_string)
 
 if __name__ == "__main__":
 
@@ -171,7 +206,7 @@ if __name__ == "__main__":
             vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
             aktualni_stav = st_reaguj_na_caru
             print(aktualni_stav)
-        
+
         if aktualni_stav == st_reaguj_na_caru:
             pokracuj_jizda_po_care = stav_reaguj_na_caru(data)
             if pokracuj_jizda_po_care:
@@ -179,21 +214,18 @@ if __name__ == "__main__":
             else:
                 aktualni_stav = st_stop
             print(aktualni_stav)
-        
+
         if aktualni_stav == st_stop:
             zastav()
             aktualni_stav = st_popojed
             print(aktualni_stav)
-        
+
         if aktualni_stav == st_popojed:
             # DU 8  - naprogramujte zde
+            stav_reaguj_na_krizovatku(data)
             print(aktualni_stav)
-        
+
+        aktualni_stav = st_vycti_senzory
         sleep(0.1)
-    
+
     zastav()
-
-    
-
-   
-

@@ -1,8 +1,10 @@
 from picoed import i2c, button_a, button_b, display
 from time import sleep
 
+zatacky = ['vpravo', 'vlevo']
+pozice = 0
+
 def vypis_senzory_cary(levy, centralni, pravy):
-    print(levy, centralni, pravy)
     if levy:
         display.pixel(display.width-1,0, 255)
     else:
@@ -126,6 +128,7 @@ def detekuj_krizovatku(data_string):
 
     # detekujeme krizovatku, kdyz vidi cernou vsechny tri nebo dva senzory
     if pocet_aktivnich >= 2:
+        print("detekovano krizovatka")
         return True
 
     return False
@@ -136,48 +139,71 @@ def stav_reaguj_na_caru(data_string):
         return False
 
     if vrat_levy(data_string):
-        jed("pravy", "dopredu", 120)
-        jed("levy", "dopredu", 0)
+        jed("pravy", "dopredu", 90)
+        jed("levy", "dopredu", 30)
 
         return True
 
     if vrat_pravy(data_string):
-        jed("pravy", "dopredu", 0)
-        jed("levy", "dopredu", 120)
+        jed("pravy", "dopredu", 30)
+        jed("levy", "dopredu", 90)
 
         return True
+
+    if vrat_centralni(data_string):
+        jed("pravy", "dopredu", 90)
+        jed("levy", "dopredu", 90)
+
+        return True
+
 
     return True
 
 def odboc_doprava(data_string):
     # Otočení doprava, dokud nenarazí na černou čáru
     while True:
-        jed("levy", "dopredu", 120)
-        jed("pravy", "dozadu", 120)
-        sleep(0.1)
+        print("odbocuju doprava")
+        jed("levy", "dopredu", 90)
+        jed("pravy", "dozadu", 90)
         data = stav_vycti_senzory()
-        if vrat_centralni(data):
+        vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
+        if vrat_centralni(data) or vrat_pravy(data) or vrat_levy(data):
             zastav()
             break
 
 def odboc_doleva(data_string):
     # Otočení doleva, dokud nenarazí na černou čáru
     while True:
-        jed("levy", "dozadu", 120)
-        jed("pravy", "dopredu", 120)
-        sleep(0.1)
+        print("odbocuju doleva")
+        jed("levy", "dozadu", 90)
+        jed("pravy", "dopredu", 90)
         data = stav_vycti_senzory()
-        if vrat_centralni(data):
+        vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
+        if vrat_centralni(data) or vrat_pravy(data) or vrat_levy(data):
             zastav()
             break
 
 
 def stav_reaguj_na_krizovatku(data_string):
-    # Momentálně je auto vzdy odboci doleva je li to mozne
-    if vrat_levy(data_string) and vrat_centralni(data_string):
-        odboc_doleva(data_string)
-    if vrat_pravy(data_string) and vrat_centralni(data_string):
+    global pozice
+    global zatacky
+    jed("levy", "dopredu", 90)
+    jed("pravy", "dopredu", 90)
+    sleep(0.5)
+
+    if pozice >= len(zatacky):
+        print("uz jsem projel vsechny zatacky")
+        zastav()
+        pozice = 0
+        return
+
+    smer = zatacky[pozice]
+    if  smer == 'vpravo':
         odboc_doprava(data_string)
+    elif smer == 'vlevo':
+        odboc_doleva(data_string)
+
+    pozice += 1
 
 if __name__ == "__main__":
 
@@ -185,14 +211,14 @@ if __name__ == "__main__":
     zastav()
 
     aktualni_stav = "start"
-
+    print(aktualni_stav)
     st_reaguj_na_caru = "reaguj na caru"
     st_vycti_senzory = "vycti senzory"
     st_stop = "st_stop"
     st_popojed = "st_popojed"
 
     while not button_a.was_pressed():
-        print(aktualni_stav)
+        #print(aktualni_stav)
         data = stav_vycti_senzory()
         vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
         sleep(0.1)

@@ -119,11 +119,13 @@ def zastav():
     jed("levy", "dozadu", 0)
 
 def detekuj_krizovatku(data_string):
-    # DU 8 
-    # situace 1: vsechny tri senzory detekuji cernou
-    # situace 2: jenom dva senzory detekuji cernou
-    #return True/False
-    return False # nahradte tento return
+    if vrat_levy(data_string) and vrat_centralni(data_string) and vrat_pravy(data_string):
+        return True
+    elif vrat_levy(data_string) and vrat_centralni(data_string):
+        return True
+    elif vrat_pravy(data_string) and vrat_centralni(data_string):
+        return True
+    return False
 
 def stav_reaguj_na_caru(data_string):
     if detekuj_krizovatku(data_string):
@@ -186,7 +188,11 @@ if __name__ == "__main__":
             print(aktualni_stav)
         
         if aktualni_stav == st_popojed:
-            # DU 8  - naprogramujte zde
+            jed("levy", "dopredu", 120)
+            jed("pravy", "dopredu", 120)
+            sleep(0.4)
+            zastav()
+            aktualni_stav = st_vycti_senzory
             print(aktualni_stav)
         
         sleep(0.1)

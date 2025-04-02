@@ -121,17 +121,23 @@ def zastav():
 def stav_reaguj_na_caru(data_string):
     
     if vrat_levy(data_string):
-        # DU naprogramujte zatoceni vlevo
-        # a vhodne vyberte rychlosti
-        
+        jed("levy", "dopredu", 0)
+        jed("pravy", "dopredu", 100)
         return True
+        
+      
     
     if vrat_pravy(data_string):
-        # DU naprogramujte zatoceni vpravo
-        # a vhodne vyberte rychlosti
+        jed("levy", "dopredu", 80)
+        jed("pravy", "dopredu", 0)
+        return True
+    
+    if vrat_centralni(data_string):
+        jed("levy", "dopredu", 80)
+        jed("pravy", "dopredu", 80)
 
  
-        return True
+      
 
 
 

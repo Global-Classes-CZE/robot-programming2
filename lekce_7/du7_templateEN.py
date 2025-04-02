@@ -7,13 +7,41 @@ def init_motor():
     sleep(0.01)
 
 def go(forward, angular):
-    # “forward” je float a obsahuje dopřednou rychlost robota
-    #    pro tento úkol prozatím používejte hodnotu 135 nebo 0
-    # “angular” je float a obsahuje rychlost otáčení robota
-    #    pro tento úkol prozatím používejte hodnotu 1350 nebo 0
-    # Použijte vzorečky kinematiky a spočítejte v_l a v_r
-    # Podle znamínek v_l a v_r volejte příslušné příkazy na směr motorů
-    # Metoda také zastaví pokud ji dám nulové rychlosti
+     # Polovina rozteče kol v metrech (7,5 cm)
+    d = 0.075
+
+    # Výpočet podle kinematiky diferenciálního pohonu
+    v_l = forward - d * angular
+    v_r = forward + d * angular
+
+    def speed_to_pwm(speed):
+        # Převod rychlosti na PWM v rozsahu 0–255
+        return min(max(int(abs(speed)), 0), 255)
+
+    pwm_l = speed_to_pwm(v_l)
+    pwm_r = speed_to_pwm(v_r)
+
+    # Výpisy pro ladění
+    print(f"[go] v = {forward}, ω = {angular}")
+    print(f"[go] v_l = {v_l:.2f}, v_r = {v_r:.2f}")
+    print(f"[go] pwm_l = {pwm_l}, pwm_r = {pwm_r}")
+    print(f"[go] left: {'forward' if v_l >= 0 else 'backward'}, right: {'forward' if v_r >= 0 else 'backward'}")
+
+    if forward == 0 and angular == 0:
+        print("[go] Stop")
+        go_pwm("left", "forward", 0)
+        go_pwm("right", "forward", 0)
+        return
+
+    if v_l >= 0:
+        go_pwm("left", "forward", pwm_l)
+    else:
+        go_pwm("left", "backward", pwm_l)
+
+    if v_r >= 0:
+        go_pwm("right", "forward", pwm_r)
+    else:
+        go_pwm("right", "backward", pwm_r)
 
     return 0
 
@@ -49,10 +77,11 @@ def set_canals(canal_off, canal_on, pwm):
     return 0
 
 if __name__ == "__main__":
-    # Write your code here :-)
-    init_motor()
-    # volejte funkci go, tak abyste ziskali:
-    # Pohyb robota dopredu 1s
-    # Zastaveni 1s - DULEZITE! Nikdy nemente smer jizdy bez zastaveni
-    # Otáčení robota na místě doleva
-    # zastaveni
+    init_motor() 
+    go(135, 1350)       # Dopředný pohyb
+    sleep(1)
+    go(0, 0)         # Zastavení
+    sleep(1)
+    go(135, 1350)      # Otáčení na místě doleva
+    sleep(1)
+    go(0, 0)         # Zastavení

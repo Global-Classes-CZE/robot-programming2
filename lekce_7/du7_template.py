@@ -2,20 +2,48 @@ from picoed import i2c
 from time import sleep
 
 def init_motoru():
-    i2c.write(0x70, bytes([0, 0x01]))
-    i2c.write(0x70, bytes([8, 0xAA]))
-    sleep(0.01)
-
+    while not i2c.try_lock():
+        pass
+    try:
+        i2c.writeto(0x70, bytes([0, 0x01]))
+        i2c.writeto(0x70, bytes([8, 0xAA]))
+        sleep(0.01)
+    finally:
+        i2c.unlock()
+ 
 def jed(dopredna, uhlova):
-    # “dopredna” je float a obsahuje dopřednou rychlost robota
-    #    pro tento úkol prozatím používejte hodnotu 135 nebo 0
-    # “uhlova” je float a obsahuje rychlost otáčení robota
-    #    pro tento úkol prozatím používejte hodnotu 1350 nebo 0
-    # Použijte vzorečky kinematiky a spočítejte v_l a v_r
-    # Podle znamínek v_l a v_r volejte příslušné příkazy na směr motorů
-    # Metoda také zastaví pokud ji dám nulové rychlosti
+    prumer_kol = 65 # milimetry
+    polomer_vozu = 75 # milimetry
+    v_l = dopredna - polomer_vozu * uhlova # milimetry / sekunda
+    v_r = dopredna + polomer_vozu * uhlova # milimetry / sekunda
+    if v_l >=0 :
+        smer_l = "dopredu"
+        rychlost_l = v_l / prumer_kol # radiany / sekunda
+    else:
+        smer_l = "dozadu"
+        rychlost_l = - v_l / prumer_kol # radiany / sekunda
 
+    if v_r >=0 :
+        smer_r = "dopredu"
+        rychlost_r = v_r / prumer_kol # radiany / sekunda
+    else:
+        smer_r = "dozadu"
+        rychlost_r = - v_r / prumer_kol # radiany / sekunda
+    print ("dopredna: ",dopredna, " uhlova: ",uhlova, "vyvola")
+    print ("jed_rad_sec( leva, " ,smer_l,", ", rychlost_l,")")
+    print ("jed_rad_sec( prava, " ,smer_r,", ", rychlost_r,")")
+    jed_rad_sec("prava", smer_r,rychlost_r)
+    jed_rad_sec("leva", smer_l,rychlost_l)
     return 0
+
+def jed_rad_sec(strana, smer, rychlost): #prepocet z radianu na pwm neni hotove
+    if rychlost < 1:
+        pwm_rychlost = 0
+    else:
+        pwm_rychlost = 127
+    jed_pwm(strana, smer, pwm_rychlost)
+    return 0
+    
 
 def jed_pwm(strana, smer, rychlost):
     if (rychlost >= 0 and rychlost <= 255):
@@ -40,8 +68,8 @@ def nastav_kanaly(kanal_off, kanal_on, rychlost):
     while not i2c.try_lock():
         pass
     try:
-        i2c.write(0x70, bytes([kanal_off, 0]))
-        i2c.write(0x70, bytes([kanal_on, rychlost]))
+        i2c.writeto(0x70, bytes([kanal_off, 0]))
+        i2c.writeto(0x70, bytes([kanal_on, rychlost]))
     finally:
         i2c.unlock()
     return 0
@@ -51,6 +79,15 @@ if __name__ == "__main__":
     init_motoru()
     # volejte funkci jed, tak abyste ziskali:
     # Pohyb robota dopredu 1s
+    jed(200,0)
+    sleep(1)
     # Zastaveni 1s - DULEZITE! Nikdy nemente smer jizdy bez zastaveni
+    jed(0,0)
+    sleep(1)
     # Otáčení robota na místě doleva
+    jed(0,150)
+    sleep(1)
     # zastaveni
+    jed(0,0)
+
+

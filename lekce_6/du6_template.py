@@ -2,7 +2,7 @@ from picoed import i2c, button_a, button_b, display
 from time import sleep
 
 def vypis_senzory_cary(levy, centralni, pravy):
-    print(levy, centralni, pravy)
+    #print(levy, centralni, pravy)
     if levy:
         display.pixel(display.width-1,0, 255)
     else:
@@ -121,15 +121,17 @@ def zastav():
 def stav_reaguj_na_caru(data_string):
     
     if vrat_levy(data_string):
-        # DU naprogramujte zatoceni vlevo
-        # a vhodne vyberte rychlosti
+        #jedu doleva
+        jed("pravy","dopredu",130)
+        jed("levy","dopredu",50)
         
         return True
     
     if vrat_pravy(data_string):
-        # DU naprogramujte zatoceni vpravo
-        # a vhodne vyberte rychlosti
-
+        #jedu doprava
+        jed("pravy","dopredu",50)
+        jed("levy","dopredu",150)
+ 
  
         return True
 
@@ -145,8 +147,8 @@ if __name__ == "__main__":
     st_reaguj_na_caru = "reaguj na caru"
     st_vycti_senzory = "vycti senzory"
 
-    while not button_a.was_pressed():
-        print(aktualni_stav)
+    while not button_a.is_pressed():
+        #print(aktualni_stav)
         data = stav_vycti_senzory()
         vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
         sleep(0.1)
@@ -154,19 +156,19 @@ if __name__ == "__main__":
 
     aktualni_stav = st_vycti_senzory
 
-    while not button_b.was_pressed():
+    while not button_b.is_pressed():
         if aktualni_stav == st_vycti_senzory:
             data = stav_vycti_senzory()
             vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
             aktualni_stav = st_reaguj_na_caru
-            print(aktualni_stav)
+            #print(aktualni_stav)
         
         if aktualni_stav == st_reaguj_na_caru:
             povedlo_se = stav_reaguj_na_caru(data)
             aktualni_stav = st_vycti_senzory
-            print(aktualni_stav)
+            #print(aktualni_stav)
         
-        sleep(0.1)
+        sleep(0.01)
     
     zastav()
 
@@ -174,3 +176,7 @@ if __name__ == "__main__":
 
    
 
+
+
+
+   

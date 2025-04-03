@@ -119,11 +119,18 @@ def zastav():
     jed("levy", "dozadu", 0)
 
 def detekuj_krizovatku(data_string):
-    # DU 8 
-    # situace 1: vsechny tri senzory detekuji cernou
-    # situace 2: jenom dva senzory detekuji cernou
-    #return True/False
-    return False # nahradte tento return
+    levy = vrat_levy(data_string)
+    centralni = vrat_centralni(data_string)
+    pravy = vrat_pravy(data_string)
+
+    # Počet senzorů, které detekují čáru
+    pocet_aktivnich = int(levy) + int(centralni) + int(pravy)
+    
+    if pocet_aktivnich >2:
+        print("[KRIZOVATKA] Detekována křižovatka!") 
+        return True
+
+    return False
 
 def stav_reaguj_na_caru(data_string):
     if detekuj_krizovatku(data_string):
@@ -139,7 +146,13 @@ def stav_reaguj_na_caru(data_string):
         jed("pravy", "dopredu", 0)
         jed("levy", "dopredu", 120)
  
-        return True 
+        return True
+    
+    if vrat_centralni(data_string):
+        jed("pravy", "dopredu", 80)
+        jed("levy", "dopredu", 80)
+        return True
+    
     
     return True
 
@@ -182,12 +195,25 @@ if __name__ == "__main__":
         
         if aktualni_stav == st_stop:
             zastav()
+            for x in range(display.width):
+                for y in range(display.height):
+                    display.pixel(x, y, 255)
+                    
+            sleep(2)
+            for x in range(display.width):
+                for y in range(display.height):
+                    display.pixel(x, y, 0)
+                    
+            sleep(2)
             aktualni_stav = st_popojed
             print(aktualni_stav)
         
         if aktualni_stav == st_popojed:
-            # DU 8  - naprogramujte zde
-            print(aktualni_stav)
+            jed("levy", "dopredu", 80)
+            jed("pravy", "dopredu", 80)
+            sleep(0.2)  # čas popojetí
+            zastav()
+            aktualni_stav = st_vycti_senzory 
         
         sleep(0.1)
     

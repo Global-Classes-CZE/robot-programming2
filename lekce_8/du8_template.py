@@ -121,9 +121,14 @@ def zastav():
 def detekuj_krizovatku(data_string):
     # DU 8 
     # situace 1: vsechny tri senzory detekuji cernou
+    bc= vrat_centralni(data_string)
+    bl =vrat_levy(data_string)
+    br =vrat_pravy(data_string)
+    # situace 1: vsechny tri senzory detekuji cernou
     # situace 2: jenom dva senzory detekuji cernou
+    vysledek = bc & bl & br or bc & br or bc & bl or bl & br
     #return True/False
-    return False # nahradte tento return
+    return vysledek
 
 def stav_reaguj_na_caru(data_string):
     if detekuj_krizovatku(data_string):
@@ -155,8 +160,10 @@ if __name__ == "__main__":
     st_vycti_senzory = "vycti senzory"
     st_stop = "st_stop"
     st_popojed = "st_popojed"
+    st_doleva = "st_doleva"
+    st_doprava = "st_doprava"
 
-    while not button_a.was_pressed():
+    while not button_a.is_pressed():
         print(aktualni_stav)
         data = stav_vycti_senzory()
         vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
@@ -165,12 +172,12 @@ if __name__ == "__main__":
 
     aktualni_stav = st_vycti_senzory
 
-    while not button_b.was_pressed():
+    while not button_b.is_pressed():
         if aktualni_stav == st_vycti_senzory:
             data = stav_vycti_senzory()
             vypis_senzory_cary(vrat_levy(data), vrat_centralni(data), vrat_pravy(data))
             aktualni_stav = st_reaguj_na_caru
-            print(aktualni_stav)
+            #print(aktualni_stav)
         
         if aktualni_stav == st_reaguj_na_caru:
             pokracuj_jizda_po_care = stav_reaguj_na_caru(data)
@@ -178,18 +185,22 @@ if __name__ == "__main__":
                 aktualni_stav = st_vycti_senzory
             else:
                 aktualni_stav = st_stop
-            print(aktualni_stav)
+            #print(aktualni_stav)
         
         if aktualni_stav == st_stop:
             zastav()
             aktualni_stav = st_popojed
-            print(aktualni_stav)
+            #print(aktualni_stav)
         
         if aktualni_stav == st_popojed:
-            # DU 8  - naprogramujte zde
-            print(aktualni_stav)
+            jed("pravy", "dopredu", 120)
+            jed("levy", "dopredu", 120)
+            sleep(0.3)
+            zastav()
+            aktualni_stav = st_doleva
+            #print(aktualni_stav)
         
-        sleep(0.1)
+        sleep(0.01)
     
     zastav()
 

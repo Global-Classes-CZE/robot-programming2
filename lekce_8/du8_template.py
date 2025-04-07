@@ -119,11 +119,10 @@ def zastav():
     jed("levy", "dozadu", 0)
 
 def detekuj_krizovatku(data_string):
-    # DU 8 
-    # situace 1: vsechny tri senzory detekuji cernou
-    # situace 2: jenom dva senzory detekuji cernou
-    #return True/False
-    return False # nahradte tento return
+    if vrat_centralni(data_string) and (vrat_levy(data_string) or vrat_pravy(data_string)):
+        return True
+    else:
+        return False
 
 def stav_reaguj_na_caru(data_string):
     if detekuj_krizovatku(data_string):
@@ -186,8 +185,12 @@ if __name__ == "__main__":
             print(aktualni_stav)
         
         if aktualni_stav == st_popojed:
-            # DU 8  - naprogramujte zde
+            jed("pravy", "dopredu", 90)
+            jed("levy", "dopredu", 90)
+            sleep(0.5)
+            zastav()      
             print(aktualni_stav)
+            break #Break jsem pouzil v ramci testovani. Jinak by zde break nebyl a po vyvolani funkce zastav() bych aktualizoval aktualni_stav na hodnotu, ktera by vyhodnotila a provedla odboceni/neodboceni podle prikazu
         
         sleep(0.1)
     

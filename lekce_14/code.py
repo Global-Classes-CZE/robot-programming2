@@ -70,6 +70,10 @@ def nastav_kanaly(kanal_off, kanal_on, rychlost):
 
 
 if __name__ == "__main__":
+    init_motoru()
+    while not button_b.was_pressed():
+        pass
+
     ultrazvuk = Ultrazvuk(DigitalInOut(P8), DigitalInOut(P12))
     dodrzovana_vzdalenost = 0.2
     koeficient_p = -2.5

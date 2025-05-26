@@ -2,8 +2,7 @@ from picoed import i2c, button_a, button_b, display
 from time import sleep, monotonic_ns
 from cas import Cas
 from senzory import Senzory
-from konstanty import Konstanty
-from motor import Motor
+from robot import Robot
 
 dopredna_pwm = 100
 uhlova_max_pwm = 80
@@ -30,45 +29,25 @@ def stav_vycti_senzory(senzory):
     data_string = senzory.vycti_senzory()
     return data_string
 
-def init_motoru():
-    while not i2c.try_lock():
-        pass
-    try:
-        i2c.writeto(0x70, b'\x00\x01')
-        i2c.writeto(0x70, b'\xE8\xAA')
-        sleep(0.1)
-    finally:
-        i2c.unlock()
-
-def zastav(motor_levy, motor_pravy):
-    motor_levy.zastav()
-    motor_pravy.zastav()
-
 def detekuj_krizovatku(senzory, data_string):
     data = senzory.vycti_senzory()
     kolik_senzoru_meri_caru = senzory.vrat_levy() + senzory.vrat_centralni() + senzory.vrat_pravy()
     return kolik_senzoru_meri_caru >=2
 
-def stav_reaguj_na_caru(motor_levy, motor_pravy, senzory, data_string):
+def stav_reaguj_na_caru(robot, senzory, data_string):
     if detekuj_krizovatku(senzory, data_string):
         return False
     
     if senzory.vrat_levy():
-        motor_pravy.jed("dopredu", uhlova_max_pwm)
-        motor_levy.jed("dopredu", uhlova_min_pwm)
-        
+        robot.jed_pres_pwm("dopredu", uhlova_max_pwm, "dopredu", uhlova_min_pwm)        
         return True
     
     if senzory.vrat_pravy():
-        motor_pravy.jed("dopredu", uhlova_min_pwm)
-        motor_levy.jed("dopredu", uhlova_max_pwm)
- 
+        robot.jed_pres_pwm("dopredu", uhlova_min_pwm, "dopredu", uhlova_max_pwm) 
         return True 
     
     if senzory.vrat_centralni():
-        motor_pravy.jed("dopredu", dopredna_pwm)
-        motor_levy.jed("dopredu", dopredna_pwm)
- 
+        robot.jed_pres_pwm("dopredu", dopredna_pwm, "dopredu", dopredna_pwm) 
         return True 
     
     return True
@@ -77,12 +56,10 @@ def stav_reaguj_na_caru(motor_levy, motor_pravy, senzory, data_string):
 if __name__ == "__main__":
 
     senzory = Senzory()
-    motor_levy = Motor(Konstanty.levy)
-    motor_pravy = Motor(Konstanty.pravy)
+    robot = Robot()
 
-    init_motoru()
-    zastav(motor_levy, motor_pravy)
-
+    robot.inicializuj_se()
+    
     aktualni_stav = "start"
 
     st_reaguj_na_caru = "reaguj na caru"
@@ -119,7 +96,7 @@ if __name__ == "__main__":
             print(aktualni_stav)
         
         if aktualni_stav == st_reaguj_na_caru:
-            pokracuj_jizda_po_care = stav_reaguj_na_caru(motor_levy, motor_pravy, senzory, data)
+            pokracuj_jizda_po_care = stav_reaguj_na_caru(robot, senzory, data)
             if pokracuj_jizda_po_care:
                 aktualni_stav = st_vycti_senzory
             else:
@@ -127,28 +104,27 @@ if __name__ == "__main__":
             print(aktualni_stav)
         
         if aktualni_stav == st_stop:
-            zastav(motor_levy, motor_pravy)
+            robot.zastav()
             cas_zacatku_zastaveni = monotonic_ns()
             aktualni_stav = st_cekej
             print(aktualni_stav)
         
         if aktualni_stav == st_cekej:
             if Cas.ubehl_cas(monotonic_ns(), cas_zacatku_zastaveni, cas_zastaveni):
-                zastav(motor_levy, motor_pravy)
+                robot.zastav()
                 aktualni_stav = st_popojed
                 print(aktualni_stav)
         
         if aktualni_stav == st_popojed:
             # DU 8  - naprogramujte zde
-            motor_pravy.jed("dopredu", dopredna_pwm)
-            motor_levy.jed("dopredu", dopredna_pwm)
+            robot.jed_pres_pwm("dopredu", dopredna_pwm, "dopredu", dopredna_pwm)
             cas_zacatku_jizdy = monotonic_ns()
             aktualni_stav = st_jedu
             print(aktualni_stav)
         
         if aktualni_stav == st_jedu:
             if Cas.ubehl_cas(monotonic_ns(), cas_zacatku_jizdy, cas_popojeti):
-                zastav(motor_levy, motor_pravy)
+                robot.zastav()
                 aktualni_stav = st_pootoc
                 print(aktualni_stav)
         
@@ -163,14 +139,12 @@ if __name__ == "__main__":
                 aktualni_prikaz += 1
                 print(aktualni_stav)
             elif prikazy[aktualni_prikaz] == "vlevo":
-                motor_pravy.jed("dopredu", uhlova_max_pwm)
-                motor_levy.jed("dozadu", uhlova_max_pwm)
+                robot.jed_pres_pwm("dopredu", uhlova_max_pwm, "dozadu", uhlova_max_pwm)
                 cas_zacatku_jizdy = monotonic_ns()
                 aktualni_stav = st_tocim
                 print(aktualni_stav)
             elif prikazy[aktualni_prikaz] == "vpravo":
-                motor_pravy.jed("dozadu", uhlova_max_pwm)
-                motor_levy.jed("dopredu", uhlova_max_pwm)
+                robot.jed_pres_pwm("dozadu", uhlova_max_pwm, "dopredu", uhlova_max_pwm)
                 cas_zacatku_jizdy = monotonic_ns()
                 aktualni_stav = st_tocim
                 print(aktualni_stav)
@@ -189,21 +163,21 @@ if __name__ == "__main__":
             if prikazy[aktualni_prikaz] == "vlevo":
                 if senzory.vrat_levy():
                     aktualni_prikaz += 1
-                    zastav(motor_levy, motor_pravy)
+                    robot.zastav()
                     aktualni_stav = st_vycti_senzory
             elif prikazy[aktualni_prikaz] == "vpravo":
                 if senzory.vrat_pravy():
                     aktualni_prikaz += 1
-                    zastav(motor_levy, motor_pravy)
+                    robot.zastav()
                     aktualni_stav = st_vycti_senzory
         
         if aktualni_stav == st_konec:
-            zastav(motor_levy, motor_pravy)
+            robot.zastav()
             print("Konec stavoveho automatu")
             break
         sleep(0.1)
     
-    zastav(motor_levy, motor_pravy)
+    robot.zastav()
 
     
 

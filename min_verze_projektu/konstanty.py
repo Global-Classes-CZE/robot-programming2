@@ -1,3 +1,6 @@
 class Konstanty:
-    levy = "levy"
-    pravy = "pravy"
+    LEVY = "levy"
+    PRAVY = "pravy"
+    DOPREDU = "dopredu"
+    DOZADU = "dozadu"
+    NEDEFINOVANO = "nedefinovano"
